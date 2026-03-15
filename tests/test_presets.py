@@ -34,7 +34,7 @@ def test_adiantum_preset():
     presets = load_all_presets()
     assert "adiantum" in presets
     adiantum = presets["adiantum"]
-    assert adiantum.meta.name == "Adiantum capillus-veneris"
+    assert adiantum.meta.name == "Adiantum raddianum"
     assert "A" in adiantum.grammar.rules
     assert "B" in adiantum.grammar.rules
     assert adiantum.params.iterations_default == 7

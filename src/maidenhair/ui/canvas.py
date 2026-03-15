@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import asyncio
-import base64
 import time
 
 import flet as ft
@@ -35,7 +34,12 @@ class LSystemCanvas(ft.Container):
 
     def __init__(self) -> None:
         self.viewport, self.renderer_name = _create_viewport()
-        self._image = ft.Image(src="", fit=ft.BoxFit.FILL, expand=True)
+        self._image = ft.Image(
+            src="",
+            fit=ft.BoxFit.FILL,
+            expand=True,
+            gapless_playback=True,  # keep old frame visible while new one loads
+        )
 
         self._status_label = ft.Text(
             value=self.renderer_name,
@@ -81,10 +85,6 @@ class LSystemCanvas(ft.Container):
             bgcolor=ft.Colors.BLACK,
             on_size_change=self._on_resize,
         )
-
-    @property
-    def _mime_type(self) -> str:
-        return "image/jpeg" if self.renderer_name == "OpenGL" else "image/bmp"
 
     def _update_fps(self) -> None:
         self._frame_count += 1
@@ -159,8 +159,8 @@ class LSystemCanvas(ft.Container):
                 self._status_label.update()
             return
 
-        b64 = base64.b64encode(img_bytes).decode("ascii")
-        self._image.src = f"data:{self._mime_type};base64,{b64}"
+        # Pass raw bytes directly — no base64 encoding needed
+        self._image.src = img_bytes
         self._last_render_time = time.monotonic()
         self._update_fps()
         if self.page:
@@ -222,6 +222,17 @@ class LSystemCanvas(ft.Container):
             self._preset.params.radius_ratio = radius_ratio
         if tropism_weight is not None:
             self._preset.params.tropism_weight = tropism_weight
+        await self.recompute()
+
+    async def set_grammar(self, axiom: str, rules: dict[str, str]) -> None:
+        """Update just the grammar (axiom + rules) and recompute.
+
+        Used by the live editor. Keeps the current parameters and display settings.
+        """
+        self._lsystem = LSystem(axiom=axiom, rules=rules)
+        if self._preset is not None:
+            self._preset.grammar.axiom = axiom
+            self._preset.grammar.rules = rules
         await self.recompute()
 
     def reset_camera(self) -> None:

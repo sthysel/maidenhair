@@ -251,7 +251,8 @@ class Viewport:
 
         # Perspective leaf size
         focal = half_h / np.tan(self.camera.fov * np.pi / 360.0)
-        leaf_radii = np.clip(0.08 * focal / np.maximum(leaf_depth, 0.1), 2, 12)
+        ls = self.geometry.leaf_size
+        leaf_radii = np.clip(ls * focal / np.maximum(leaf_depth, 0.1), 2, 12)
 
         lr, lg, lb = self.leaf_color
 

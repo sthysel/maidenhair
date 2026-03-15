@@ -47,6 +47,49 @@ PALETTE: dict[str, tuple[int, int, int]] = {
 }
 
 
+LEAF_COLORS = [
+    "green",
+    "light-green",
+    "bright-green",
+    "dark-green",
+    "olive",
+    "fern-green",
+    "moss",
+    "spring-green",
+    "yellow",
+    "orange",
+    "red",
+    "pink",
+    "lavender",
+]
+
+BRANCH_COLORS = [
+    "bark",
+    "dark-bark",
+    "brown",
+    "dark-brown",
+    "light-brown",
+    "walnut",
+    "oak",
+    "ebony",
+    "charcoal",
+    "black",
+    "slate",
+    "grey",
+]
+
+BACKGROUND_COLORS = [
+    "forest-night",
+    "midnight",
+    "deep-green",
+    "black",
+    "charcoal",
+    "parchment",
+    "cream",
+    "white",
+]
+
+
 def resolve_color(value: str | list[int]) -> list[int]:
     """Resolve a colour value — either a name from the palette or an RGB list.
 

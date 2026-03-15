@@ -22,6 +22,8 @@ class Geometry:
     segments: list[tuple[np.ndarray, np.ndarray, float]] = field(default_factory=list)
     # Each leaf: (position, heading, left_vector) for oriented fan shapes
     leaves: list[tuple[np.ndarray, np.ndarray, np.ndarray]] = field(default_factory=list)
+    # Leaf size hint, set by the turtle based on step_length
+    leaf_size: float = 0.1
 
     def bounding_box(self) -> tuple[np.ndarray, np.ndarray]:
         """Return (min_corner, max_corner) of all segment endpoints."""
@@ -125,7 +127,8 @@ def interpret(
 
         if name == "F":
             # Move forward, emit segment
-            length = params[0] if params else step_length
+            # step_length acts as scale factor: F(0.5) -> 0.5 * step_length
+            length = (params[0] if params else 1.0) * step_length
             heading = state.frame[:, 0]
             new_pos = state.pos + heading * length
 
@@ -138,7 +141,7 @@ def interpret(
 
         elif name == "f":
             # Move forward, no segment
-            length = params[0] if params else step_length
+            length = (params[0] if params else 1.0) * step_length
             heading = state.frame[:, 0]
             state.pos = state.pos + heading * length
 
@@ -215,6 +218,7 @@ def interpret(
 
         # else: unknown symbol, ignore (identity)
 
+    geometry.leaf_size = step_length * 0.2
     return geometry
 
 

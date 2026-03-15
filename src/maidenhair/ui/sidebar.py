@@ -1,4 +1,4 @@
-"""Sidebar controls for L-system parameter adjustment."""
+"""Sidebar controls with live grammar editor."""
 
 from __future__ import annotations
 
@@ -8,19 +8,36 @@ from typing import TYPE_CHECKING, Any
 
 import flet as ft
 
+from maidenhair.core.palette import BACKGROUND_COLORS, BRANCH_COLORS, LEAF_COLORS, PALETTE
 from maidenhair.core.presets import PresetConfig, list_bundled_presets, load_preset
 from maidenhair.render.export import export_mesh
 
 if TYPE_CHECKING:
     from maidenhair.ui.canvas import LSystemCanvas
 
+_EDITOR_DEBOUNCE = 0.6  # seconds after typing stops before re-rendering
+
+
+def _rgb_to_palette_name(rgb: list[int], candidates: list[str]) -> str:
+    """Find the closest palette name for an RGB value from a list of candidates."""
+    best_name = candidates[0]
+    best_dist = float("inf")
+    for name in candidates:
+        pr, pg, pb = PALETTE[name]
+        dist = (pr - rgb[0]) ** 2 + (pg - rgb[1]) ** 2 + (pb - rgb[2]) ** 2
+        if dist < best_dist:
+            best_dist = dist
+            best_name = name
+    return best_name
+
 
 class Sidebar(ft.Container):
-    """Right sidebar with preset selector, parameter sliders, and export buttons."""
+    """Right sidebar with preset selector, grammar editor, and parameter sliders."""
 
     def __init__(self, canvas: LSystemCanvas) -> None:
         self._canvas = canvas
         self._debounce_task: asyncio.Task[None] | None = None
+        self._editor_debounce_task: asyncio.Task[None] | None = None
 
         # Preset selector
         presets = list_bundled_presets()
@@ -30,8 +47,27 @@ class Sidebar(ft.Container):
             options=[ft.dropdown.Option(name) for name in self._preset_names],
             value=self._preset_names[0] if self._preset_names else None,
             on_select=self._on_preset_change,
-            width=280,
         )
+
+        # Grammar editor — monospace font, no fixed width so it fills the sidebar
+        self._axiom_field = ft.TextField(
+            label="Axiom",
+            value="",
+            text_size=13,
+            text_style=ft.TextStyle(font_family="monospace"),
+            on_change=self._on_grammar_edit,
+        )
+        self._rules_field = ft.TextField(
+            label="Rules  (X = replacement)",
+            value="",
+            multiline=True,
+            min_lines=5,
+            max_lines=14,
+            text_size=13,
+            text_style=ft.TextStyle(font_family="monospace"),
+            on_change=self._on_grammar_edit,
+        )
+        self._grammar_status = ft.Text(value="", size=11, color=ft.Colors.RED_300)
 
         # Iterations stepper
         self._iterations_field = ft.TextField(
@@ -51,11 +87,25 @@ class Sidebar(ft.Container):
         self._angle_default = self._make_slider("Default Angle", 5.0, 90.0, 25.0)
         self._tropism_weight = self._make_slider("Tropism", 0.0, 0.5, 0.12)
 
-        # Display controls
-        self._branch_color = ft.TextField(
-            label="Branch RGB", value="30,10,2", width=280, on_submit=self._on_color_change
+        # Display colour dropdowns
+        self._leaf_color_dd = ft.Dropdown(
+            label="Leaf colour",
+            options=[ft.dropdown.Option(name) for name in LEAF_COLORS],
+            value="light-green",
+            on_select=self._on_color_change,
         )
-        self._leaf_color = ft.TextField(label="Leaf RGB", value="88,155,48", width=280, on_submit=self._on_color_change)
+        self._branch_color_dd = ft.Dropdown(
+            label="Branch colour",
+            options=[ft.dropdown.Option(name) for name in BRANCH_COLORS],
+            value="dark-bark",
+            on_select=self._on_color_change,
+        )
+        self._bg_color_dd = ft.Dropdown(
+            label="Background",
+            options=[ft.dropdown.Option(name) for name in BACKGROUND_COLORS],
+            value="forest-night",
+            on_select=self._on_color_change,
+        )
 
         # Export buttons
         self._export_obj = ft.ElevatedButton(
@@ -74,8 +124,13 @@ class Sidebar(ft.Container):
         super().__init__(
             content=ft.Column(
                 controls=[
-                    ft.Text(value="Presets", size=16, weight=ft.FontWeight.BOLD),
+                    ft.Text(value="Preset", size=16, weight=ft.FontWeight.BOLD),
                     self._preset_dropdown,
+                    ft.Divider(),
+                    ft.Text(value="Grammar", size=16, weight=ft.FontWeight.BOLD),
+                    self._axiom_field,
+                    self._rules_field,
+                    self._grammar_status,
                     ft.Divider(),
                     ft.Text(value="Iterations", size=16, weight=ft.FontWeight.BOLD),
                     ft.Row(controls=[self._iter_down, self._iterations_field, self._iter_up]),
@@ -88,8 +143,9 @@ class Sidebar(ft.Container):
                     self._tropism_weight["row"],
                     ft.Divider(),
                     ft.Text(value="Display", size=16, weight=ft.FontWeight.BOLD),
-                    self._branch_color,
-                    self._leaf_color,
+                    self._leaf_color_dd,
+                    self._branch_color_dd,
+                    self._bg_color_dd,
                     ft.Divider(),
                     ft.Text(value="Export", size=16, weight=ft.FontWeight.BOLD),
                     ft.Row(controls=[self._export_obj, self._export_glb], wrap=True),
@@ -98,7 +154,7 @@ class Sidebar(ft.Container):
                 scroll=ft.ScrollMode.AUTO,
                 spacing=8,
             ),
-            width=320,
+            width=440,
             padding=16,
         )
 
@@ -117,26 +173,35 @@ class Sidebar(ft.Container):
         row = ft.Row(controls=[label_text, slider, value_text], spacing=4)
         return {"slider": slider, "text": label_text, "value_text": value_text, "row": row}
 
+    # --- Preset loading ---
+
     async def load_default_preset(self) -> None:
-        """Load the first available preset."""
         if self._preset_names:
             presets = list_bundled_presets()
             name = self._preset_names[0]
             preset = load_preset(presets[name])
-            self._update_sliders_from_preset(preset)
+            self._populate_from_preset(preset)
             await self._canvas.set_preset(preset)
 
-    async def _on_preset_change(self, e: ft.ControlEvent) -> None:
+    async def _on_preset_change(self, _e: ft.ControlEvent) -> None:
         name = self._preset_dropdown.value
         if name is None:
             return
         presets = list_bundled_presets()
         if name in presets:
             preset = load_preset(presets[name])
-            self._update_sliders_from_preset(preset)
+            self._populate_from_preset(preset)
             await self._canvas.set_preset(preset)
 
-    def _update_sliders_from_preset(self, preset: PresetConfig) -> None:
+    def _populate_from_preset(self, preset: PresetConfig) -> None:
+        """Fill all editor fields from a preset."""
+        # Grammar editor
+        self._axiom_field.value = preset.grammar.axiom
+        rules_text = "\n".join(f"{k} = {v}" for k, v in preset.grammar.rules.items())
+        self._rules_field.value = rules_text
+        self._grammar_status.value = ""
+
+        # Sliders
         self._step_length["slider"].value = preset.params.step_length
         self._step_length["value_text"].value = f"{preset.params.step_length:.2f}"
         self._radius_start["slider"].value = preset.params.radius_start
@@ -149,13 +214,68 @@ class Sidebar(ft.Container):
         self._tropism_weight["value_text"].value = f"{preset.params.tropism_weight:.2f}"
         self._iterations_field.value = str(preset.params.iterations_default)
 
-        bc = preset.display.branch_color
-        lc = preset.display.leaf_color
-        self._branch_color.value = f"{bc[0]},{bc[1]},{bc[2]}"
-        self._leaf_color.value = f"{lc[0]},{lc[1]},{lc[2]}"
+        # Colours — find closest palette name for the preset's RGB values
+        self._leaf_color_dd.value = _rgb_to_palette_name(preset.display.leaf_color, LEAF_COLORS)
+        self._branch_color_dd.value = _rgb_to_palette_name(preset.display.branch_color, BRANCH_COLORS)
+        self._bg_color_dd.value = _rgb_to_palette_name(preset.display.background_color, BACKGROUND_COLORS)
+
+    # --- Grammar editor ---
+
+    def _parse_rules(self) -> dict[str, str] | None:
+        """Parse rules text into a dict. Returns None on error."""
+        rules: dict[str, str] = {}
+        text = self._rules_field.value or ""
+        for line in text.strip().splitlines():
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            if "=" not in line:
+                return None
+            key, _, value = line.partition("=")
+            key = key.strip()
+            value = value.strip()
+            if len(key) != 1:
+                return None
+            rules[key] = value
+        return rules
+
+    async def _on_grammar_edit(self, _e: ft.ControlEvent) -> None:
+        """Debounced live update when grammar text changes."""
+        if self._editor_debounce_task and not self._editor_debounce_task.done():
+            self._editor_debounce_task.cancel()
+        self._editor_debounce_task = asyncio.create_task(self._apply_grammar_edit())
+
+    async def _apply_grammar_edit(self) -> None:
+        await asyncio.sleep(_EDITOR_DEBOUNCE)
+
+        axiom = (self._axiom_field.value or "").strip()
+        if not axiom:
+            self._grammar_status.value = "Axiom is empty"
+            if self.page:
+                self._grammar_status.update()
+            return
+
+        rules = self._parse_rules()
+        if rules is None:
+            self._grammar_status.value = "Invalid rule format (use: X = replacement)"
+            if self.page:
+                self._grammar_status.update()
+            return
+
+        self._grammar_status.value = ""
+        if self.page:
+            self._grammar_status.update()
+
+        try:
+            await self._canvas.set_grammar(axiom, rules)
+        except Exception as exc:
+            self._grammar_status.value = str(exc)[:80]
+            if self.page:
+                self._grammar_status.update()
+
+    # --- Parameter sliders ---
 
     async def _on_slider_change(self, _e: ft.ControlEvent) -> None:
-        # Update value display
         sliders = [
             self._step_length,
             self._radius_start,
@@ -165,8 +285,6 @@ class Sidebar(ft.Container):
         ]
         for info in sliders:
             info["value_text"].value = f"{info['slider'].value:.2f}"
-
-        # Debounce: cancel previous recompute
         if self._debounce_task and not self._debounce_task.done():
             self._debounce_task.cancel()
         self._debounce_task = asyncio.create_task(self._debounced_update())
@@ -181,10 +299,12 @@ class Sidebar(ft.Container):
             tropism_weight=self._tropism_weight["slider"].value,
         )
 
-    async def _on_iterations_change(self, e: ft.ControlEvent) -> None:
+    # --- Iterations ---
+
+    async def _on_iterations_change(self, _e: ft.ControlEvent) -> None:
         try:
             n = int(self._iterations_field.value or "1")
-            n = max(1, min(8, n))
+            n = max(1, min(10, n))
             self._iterations_field.value = str(n)
             await self._canvas.set_iterations(n)
         except (ValueError, TypeError):
@@ -192,9 +312,8 @@ class Sidebar(ft.Container):
 
     async def _iter_increment(self, _e: ft.ControlEvent) -> None:
         try:
-            current = self._iterations_field.value or "1"
-            n = int(current) + 1
-            n = min(8, n)
+            n = int(self._iterations_field.value or "1") + 1
+            n = min(10, n)
             self._iterations_field.value = str(n)
             if self.page:
                 self._iterations_field.update()
@@ -204,8 +323,7 @@ class Sidebar(ft.Container):
 
     async def _iter_decrement(self, _e: ft.ControlEvent) -> None:
         try:
-            current = self._iterations_field.value or "1"
-            n = int(current) - 1
+            n = int(self._iterations_field.value or "1") - 1
             n = max(1, n)
             self._iterations_field.value = str(n)
             if self.page:
@@ -214,23 +332,34 @@ class Sidebar(ft.Container):
         except (ValueError, TypeError):
             pass
 
+    # --- Display ---
+
     async def _on_color_change(self, _e: ft.ControlEvent) -> None:
-        try:
-            bc_val = self._branch_color.value or ""
-            lc_val = self._leaf_color.value or ""
-            bc = tuple(int(x.strip()) for x in bc_val.split(","))
-            lc = tuple(int(x.strip()) for x in lc_val.split(","))
-            if len(bc) == 3 and len(lc) == 3:
-                self._canvas.viewport.branch_color = bc  # type: ignore[assignment]
-                self._canvas.viewport.leaf_color = lc  # type: ignore[assignment]
-                await self._canvas._render_frame()
-        except (ValueError, TypeError):
-            pass
+        lc_name = self._leaf_color_dd.value or "light-green"
+        bc_name = self._branch_color_dd.value or "dark-bark"
+        bg_name = self._bg_color_dd.value or "forest-night"
+
+        lc = PALETTE.get(lc_name, (75, 175, 55))
+        bc = PALETTE.get(bc_name, (30, 15, 8))
+        bg = PALETTE.get(bg_name, (12, 22, 16))
+
+        self._canvas.viewport.branch_color = bc  # type: ignore[assignment]
+        self._canvas.viewport.leaf_color = lc  # type: ignore[assignment]
+        self._canvas.viewport.background_color = bg  # type: ignore[assignment]
+
+        # For GL subprocess: need full recompute to push colours to worker
+        if self._canvas._preset is not None:
+            self._canvas._preset.display.branch_color = list(bc)
+            self._canvas._preset.display.leaf_color = list(lc)
+            self._canvas._preset.display.background_color = list(bg)
+
+        await self._canvas.recompute()
+
+    # --- Export ---
 
     def _export(self, fmt: str) -> None:
         if self._canvas.viewport.geometry is None:
             return
-
         if fmt == "png":
             png_bytes = self._canvas.viewport.render_png()
             path = Path("maidenhair_export.png")
@@ -244,7 +373,6 @@ class Sidebar(ft.Container):
                 branch_color=self._canvas.viewport.branch_color,
                 leaf_color=self._canvas.viewport.leaf_color,
             )
-
         if self.page:
             snack = ft.SnackBar(content=ft.Text(value=f"Exported to {path}"), open=True)
             self.page.overlay.append(snack)

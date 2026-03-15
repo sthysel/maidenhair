@@ -341,7 +341,7 @@ class GLViewport:
             lr = self.leaf_color[0] / 255.0
             lg = self.leaf_color[1] / 255.0
             lb = self.leaf_color[2] / 255.0
-            leaf_size = 0.2
+            leaf_size = self.geometry.leaf_size
 
             n = len(self.geometry.leaves)
             leaf_pos = np.empty((n, 3), dtype=np.float32)
@@ -449,6 +449,11 @@ class GLViewport:
         data = self._fbo_resolve.read(components=3)
         img = Image.frombytes("RGB", (self.width, self.height), data)
         img = img.transpose(Image.Transpose.FLIP_TOP_BOTTOM)
+
+        # Draw scale bar overlay
+        if self.geometry is not None and self.geometry.segments:
+            _draw_scale_bar(img, self.camera, self.width, self.height)
+
         return img
 
 
@@ -486,6 +491,53 @@ def _perspective(fov: float, aspect: float, near: float, far: float) -> np.ndarr
     mat[2, 3] = (2.0 * far * near) / (near - far)
     mat[3, 2] = -1.0
     return mat
+
+
+def _draw_scale_bar(img: Image.Image, camera: Camera, width: int, height: int) -> None:
+    """Draw a scale bar in the bottom-right corner of the image."""
+    from PIL import ImageDraw
+
+    # Compute how many world units correspond to ~100px at the camera distance
+    fov_rad = camera.fov * np.pi / 180.0
+    half_h = height / 2.0
+    focal = half_h / np.tan(fov_rad / 2.0)
+    # pixels per world unit at the target distance
+    px_per_unit = focal / max(camera.distance, 0.1)
+
+    # Pick a "nice" scale bar length (1, 2, 5, 10, ... units)
+    target_px = 80
+    raw_units = target_px / px_per_unit
+    # Round to nearest nice number
+    magnitude = 10 ** np.floor(np.log10(max(raw_units, 1e-6)))
+    for nice in [1, 2, 5, 10]:
+        bar_units = nice * magnitude
+        if bar_units * px_per_unit >= target_px * 0.5:
+            break
+
+    bar_px = int(bar_units * px_per_unit)
+    if bar_px < 10 or bar_px > width // 2:
+        return
+
+    draw = ImageDraw.Draw(img)
+    # Position: bottom-right, 20px margin
+    x0 = width - bar_px - 20
+    y0 = height - 20
+    x1 = x0 + bar_px
+
+    # Bar line with endcaps
+    color = (180, 180, 180)
+    draw.line([(x0, y0), (x1, y0)], fill=color, width=2)
+    draw.line([(x0, y0 - 4), (x0, y0 + 4)], fill=color, width=2)
+    draw.line([(x1, y0 - 4), (x1, y0 + 4)], fill=color, width=2)
+
+    # Label
+    label = f"{bar_units:g}"
+    try:
+        bbox = draw.textbbox((0, 0), label)
+        tw = bbox[2] - bbox[0]
+    except Exception:
+        tw = len(label) * 6
+    draw.text((x0 + (bar_px - tw) // 2, y0 - 16), label, fill=color)
 
 
 def _image_to_jpeg(img: Image.Image, quality: int = 85) -> bytes:

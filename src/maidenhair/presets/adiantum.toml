@@ -1,25 +1,30 @@
 [meta]
-name = "Adiantum capillus-veneris"
-description = "Southern maidenhair fern — tripinnate with fan-shaped pinnae"
-reference = "Based on ABOP compound leaf model with Adiantum morphology"
+name = "Adiantum raddianum"
+description = "Delta maidenhair fern — bushy clump of arching tripinnate fronds"
+reference = "Based on ABOP compound leaf model with A. raddianum morphology"
 
 [grammar]
-# A = main rachis apex: alternating primary pinnae with golden-angle roll
-# B = primary pinna apex: produces secondary sub-pinnae
-# C = secondary pinna apex: produces dense leaflets along its length
-axiom = "F(1)F(1)A"
+# Multiple fronds radiate from a central base, each arching outward.
+# S = frond stipe (initial stem segment before branching)
+# A = rachis apex: alternating primary pinnae with golden-angle roll
+# B = primary pinna: alternating secondary sub-pinnae
+# C = secondary pinna: dense fan-shaped leaflets
+#
+# Axiom: 7 fronds at ~51° intervals, each pitched outward 50-70°
+axiom = "[+(10)&(55)S]/(51)[-(5)&(60)S]/(51)[+(8)&(50)S]/(51)[-(10)&(65)S]/(51)[+(5)&(55)S]/(51)[-(8)&(58)S]/(51)[+(12)&(52)S]"
 
 [grammar.rules]
-A = "F(0.5)!![+(48)&(10)B]/(137)F(0.5)[-(48)&(10)B]/(137)A"
-B = "F(0.25)![+(35)C]F(0.25)[-(35)C]!B"
-C = "f(0.08)[+(22)~][-(22)~]C"
+S = "F(0.6)F(0.5)A"
+A = "F(0.3)!![+(42)&(6)B]/(137)F(0.3)[-(42)&(6)B]/(137)A"
+B = "F(0.12)![+(30)C]F(0.12)[-(30)C]!B"
+C = "f(0.04)[+(18)~][-(18)~]C"
 
 [params]
-step_length = 0.8
-radius_start = 0.035
-radius_ratio = 0.7
+step_length = 0.7
+radius_start = 0.025
+radius_ratio = 0.68
 angle_default = 25.0
-tropism_weight = 0.18
+tropism_weight = 0.22
 iterations_default = 7
 iterations_max = 9
 
