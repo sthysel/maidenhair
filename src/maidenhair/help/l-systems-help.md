@@ -60,10 +60,11 @@ in the string is a command.
 
 ### Movement
 
-| Symbol | Action |
-|--------|--------|
-| `F` | Move forward one step, **drawing** a branch segment |
-| `f` | Move forward one step, **no drawing** (invisible advance) |
+| Symbol | Action                                                    |
+|--------|-----------------------------------------------------------|
+| `F`    | Move forward one step, **drawing** a branch segment       |
+| `f`    | Move forward one step, **no drawing** (invisible advance) |
+|        |                                                           |
 
 With parameters: `F(2.5)` moves forward 2.5 units. Without parameters,
 the default `step_length` is used.
@@ -72,14 +73,14 @@ the default `step_length` is used.
 
 All angles are in degrees.
 
-| Symbol | Axis | Direction |
-|--------|------|-----------|
-| `+` | Yaw | Turn left (around the up axis) |
-| `-` | Yaw | Turn right |
-| `&` | Pitch | Tilt down (nose down) |
-| `^` | Pitch | Tilt up |
-| `/` | Roll | Roll clockwise |
-| `\` | Roll | Roll counter-clockwise |
+| Symbol | Axis  | Direction                      |
+|--------|-------|--------------------------------|
+| `+`    | Yaw   | Turn left (around the up axis) |
+| `-`    | Yaw   | Turn right                     |
+| `&`    | Pitch | Tilt down (nose down)          |
+| `^`    | Pitch | Tilt up                        |
+| `/`    | Roll  | Roll clockwise                 |
+| `\`    | Roll  | Roll counter-clockwise         |
 
 With parameters: `+(45)` turns left 45°. Without parameters, the
 default `angle_default` is used.
@@ -90,10 +91,10 @@ and **roll** (`/`).
 
 ### Branching
 
-| Symbol | Action |
-|--------|--------|
-| `[` | **Push** — save the turtle's position, orientation, and radius to a stack |
-| `]` | **Pop** — restore the most recently saved state |
+| Symbol | Action                                                                    |
+|--------|---------------------------------------------------------------------------|
+| `[`    | **Push** — save the turtle's position, orientation, and radius to a stack |
+| `]`    | **Pop** — restore the most recently saved state                           |
 
 This is how branches work. The turtle walks along the main stem, pushes
 its state, walks along a branch, pops back to the main stem, and
@@ -116,10 +117,10 @@ Reads as:
 
 ### Decoration
 
-| Symbol | Action |
-|--------|--------|
-| `!` | Reduce branch radius by `radius_ratio` (makes branches thinner) |
-| `~` | Emit a leaf at the current position |
+| Symbol | Action                                                          |
+|--------|-----------------------------------------------------------------|
+| `!`    | Reduce branch radius by `radius_ratio` (makes branches thinner) |
+| `~`    | Emit a leaf at the current position                             |
 
 ## Parametric symbols
 

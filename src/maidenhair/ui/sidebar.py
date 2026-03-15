@@ -1,4 +1,4 @@
-"""Sidebar controls with live grammar editor."""
+"""Sidebar controls — parameters, display, and export."""
 
 from __future__ import annotations
 
@@ -15,11 +15,9 @@ from maidenhair.render.export import export_mesh
 if TYPE_CHECKING:
     from maidenhair.ui.canvas import LSystemCanvas
 
-_EDITOR_DEBOUNCE = 0.6  # seconds after typing stops before re-rendering
-
 
 def _rgb_to_palette_name(rgb: list[int], candidates: list[str]) -> str:
-    """Find the closest palette name for an RGB value from a list of candidates."""
+    """Find the closest palette name for an RGB value."""
     best_name = candidates[0]
     best_dist = float("inf")
     for name in candidates:
@@ -32,12 +30,11 @@ def _rgb_to_palette_name(rgb: list[int], candidates: list[str]) -> str:
 
 
 class Sidebar(ft.Container):
-    """Right sidebar with preset selector, grammar editor, and parameter sliders."""
+    """Right sidebar with preset selector, parameter sliders, display, and export."""
 
     def __init__(self, canvas: LSystemCanvas) -> None:
         self._canvas = canvas
         self._debounce_task: asyncio.Task[None] | None = None
-        self._editor_debounce_task: asyncio.Task[None] | None = None
 
         # Preset selector
         presets = list_bundled_presets()
@@ -48,26 +45,6 @@ class Sidebar(ft.Container):
             value=self._preset_names[0] if self._preset_names else None,
             on_select=self._on_preset_change,
         )
-
-        # Grammar editor — monospace font, no fixed width so it fills the sidebar
-        self._axiom_field = ft.TextField(
-            label="Axiom",
-            value="",
-            text_size=13,
-            text_style=ft.TextStyle(font_family="monospace"),
-            on_change=self._on_grammar_edit,
-        )
-        self._rules_field = ft.TextField(
-            label="Rules  (X = replacement)",
-            value="",
-            multiline=True,
-            min_lines=5,
-            max_lines=14,
-            text_size=13,
-            text_style=ft.TextStyle(font_family="monospace"),
-            on_change=self._on_grammar_edit,
-        )
-        self._grammar_status = ft.Text(value="", size=11, color=ft.Colors.RED_300)
 
         # Iterations stepper
         self._iterations_field = ft.TextField(
@@ -81,7 +58,7 @@ class Sidebar(ft.Container):
         self._iter_down = ft.IconButton(icon=ft.Icons.REMOVE, on_click=self._iter_decrement)
 
         # Geometry parameter sliders
-        self._step_length = self._make_slider("Step Length", 0.1, 3.0, 0.8)
+        self._step_length = self._make_slider("Step Length", 0.1, 3.0, 1.0)
         self._radius_start = self._make_slider("Radius", 0.01, 0.2, 0.05)
         self._radius_ratio = self._make_slider("Radius Ratio", 0.3, 1.0, 0.75)
         self._angle_default = self._make_slider("Default Angle", 5.0, 90.0, 25.0)
@@ -127,11 +104,6 @@ class Sidebar(ft.Container):
                     ft.Text(value="Preset", size=16, weight=ft.FontWeight.BOLD),
                     self._preset_dropdown,
                     ft.Divider(),
-                    ft.Text(value="Grammar", size=16, weight=ft.FontWeight.BOLD),
-                    self._axiom_field,
-                    self._rules_field,
-                    self._grammar_status,
-                    ft.Divider(),
                     ft.Text(value="Iterations", size=16, weight=ft.FontWeight.BOLD),
                     ft.Row(controls=[self._iter_down, self._iterations_field, self._iter_up]),
                     ft.Divider(),
@@ -154,7 +126,7 @@ class Sidebar(ft.Container):
                 scroll=ft.ScrollMode.AUTO,
                 spacing=8,
             ),
-            width=440,
+            width=320,
             padding=16,
         )
 
@@ -180,7 +152,7 @@ class Sidebar(ft.Container):
             presets = list_bundled_presets()
             name = self._preset_names[0]
             preset = load_preset(presets[name])
-            self._populate_from_preset(preset)
+            self._update_controls_from_preset(preset)
             await self._canvas.set_preset(preset)
 
     async def _on_preset_change(self, _e: ft.ControlEvent) -> None:
@@ -190,18 +162,10 @@ class Sidebar(ft.Container):
         presets = list_bundled_presets()
         if name in presets:
             preset = load_preset(presets[name])
-            self._populate_from_preset(preset)
+            self._update_controls_from_preset(preset)
             await self._canvas.set_preset(preset)
 
-    def _populate_from_preset(self, preset: PresetConfig) -> None:
-        """Fill all editor fields from a preset."""
-        # Grammar editor
-        self._axiom_field.value = preset.grammar.axiom
-        rules_text = "\n".join(f"{k} = {v}" for k, v in preset.grammar.rules.items())
-        self._rules_field.value = rules_text
-        self._grammar_status.value = ""
-
-        # Sliders
+    def _update_controls_from_preset(self, preset: PresetConfig) -> None:
         self._step_length["slider"].value = preset.params.step_length
         self._step_length["value_text"].value = f"{preset.params.step_length:.2f}"
         self._radius_start["slider"].value = preset.params.radius_start
@@ -214,66 +178,11 @@ class Sidebar(ft.Container):
         self._tropism_weight["value_text"].value = f"{preset.params.tropism_weight:.2f}"
         self._iterations_field.value = str(preset.params.iterations_default)
 
-        # Colours — find closest palette name for the preset's RGB values
         self._leaf_color_dd.value = _rgb_to_palette_name(preset.display.leaf_color, LEAF_COLORS)
         self._branch_color_dd.value = _rgb_to_palette_name(preset.display.branch_color, BRANCH_COLORS)
         self._bg_color_dd.value = _rgb_to_palette_name(preset.display.background_color, BACKGROUND_COLORS)
 
-    # --- Grammar editor ---
-
-    def _parse_rules(self) -> dict[str, str] | None:
-        """Parse rules text into a dict. Returns None on error."""
-        rules: dict[str, str] = {}
-        text = self._rules_field.value or ""
-        for line in text.strip().splitlines():
-            line = line.strip()
-            if not line or line.startswith("#"):
-                continue
-            if "=" not in line:
-                return None
-            key, _, value = line.partition("=")
-            key = key.strip()
-            value = value.strip()
-            if len(key) != 1:
-                return None
-            rules[key] = value
-        return rules
-
-    async def _on_grammar_edit(self, _e: ft.ControlEvent) -> None:
-        """Debounced live update when grammar text changes."""
-        if self._editor_debounce_task and not self._editor_debounce_task.done():
-            self._editor_debounce_task.cancel()
-        self._editor_debounce_task = asyncio.create_task(self._apply_grammar_edit())
-
-    async def _apply_grammar_edit(self) -> None:
-        await asyncio.sleep(_EDITOR_DEBOUNCE)
-
-        axiom = (self._axiom_field.value or "").strip()
-        if not axiom:
-            self._grammar_status.value = "Axiom is empty"
-            if self.page:
-                self._grammar_status.update()
-            return
-
-        rules = self._parse_rules()
-        if rules is None:
-            self._grammar_status.value = "Invalid rule format (use: X = replacement)"
-            if self.page:
-                self._grammar_status.update()
-            return
-
-        self._grammar_status.value = ""
-        if self.page:
-            self._grammar_status.update()
-
-        try:
-            await self._canvas.set_grammar(axiom, rules)
-        except Exception as exc:
-            self._grammar_status.value = str(exc)[:80]
-            if self.page:
-                self._grammar_status.update()
-
-    # --- Parameter sliders ---
+    # --- Sliders ---
 
     async def _on_slider_change(self, _e: ft.ControlEvent) -> None:
         sliders = [
@@ -347,7 +256,6 @@ class Sidebar(ft.Container):
         self._canvas.viewport.leaf_color = lc  # type: ignore[assignment]
         self._canvas.viewport.background_color = bg  # type: ignore[assignment]
 
-        # For GL subprocess: need full recompute to push colours to worker
         if self._canvas._preset is not None:
             self._canvas._preset.display.branch_color = list(bc)
             self._canvas._preset.display.leaf_color = list(lc)
