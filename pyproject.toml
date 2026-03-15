@@ -1,0 +1,66 @@
+[project]
+name = "maidenhair"
+version = "0.1.0"
+description = "Interactive L-system botanical explorer with real-time 3D visualisation"
+requires-python = ">=3.13"
+dependencies = [
+    "flet>=0.25",
+    "numpy>=2.0",
+    "trimesh>=4.4",
+    "pillow>=10.0",
+    "pydantic>=2.0",
+    "typer>=0.12",
+    "rich>=13.0",
+    "scipy>=1.17.1",
+    "moderngl>=5.12.0",
+]
+
+[project.scripts]
+maidenhair = "maidenhair.cli:app"
+
+[build-system]
+requires = ["uv_build>=0.7.5,<0.8"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.4",
+    "ty",
+    "bump-my-version",
+    "pre-commit",
+]
+
+[tool.bumpversion]
+current_version = "0.1.0"
+commit = true
+tag = true
+tag_name = "release/{new_version}"
+
+[[tool.bumpversion.files]]
+filename = "pyproject.toml"
+search = 'version = "{current_version}"'
+replace = 'version = "{new_version}"'
+
+[[tool.bumpversion.files]]
+filename = "src/maidenhair/__init__.py"
+search = '__version__ = "{current_version}"'
+replace = '__version__ = "{new_version}"'
+
+[tool.ruff]
+target-version = "py313"
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+
+[tool.ty.environment]
+root = ["src"]
+
+[tool.ty.src]
+# Flet and moderngl stubs are incomplete — exclude ui/ and gl_* from type checking.
+exclude = ["src/maidenhair/ui/", "src/maidenhair/render/gl_*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

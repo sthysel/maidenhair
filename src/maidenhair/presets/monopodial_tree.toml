@@ -1,0 +1,26 @@
+[meta]
+name = "Monopodial Tree"
+description = "Tree with a single dominant trunk axis"
+reference = "Prusinkiewicz & Lindenmayer 1990, p.56"
+
+[grammar]
+axiom = "A"
+
+[grammar.rules]
+A = "F(1)[&(45)B]/(137)A"
+B = "F(0.8)[-(30)$C]C"
+C = "F(0.6)[+(30)$B]B"
+
+[params]
+step_length = 1.0
+radius_start = 0.08
+radius_ratio = 0.7
+angle_default = 30.0
+tropism_weight = 0.15
+iterations_default = 6
+iterations_max = 8
+
+[display]
+leaf_color = [80, 180, 50]
+branch_color = [150, 100, 50]
+background_color = [12, 22, 16]

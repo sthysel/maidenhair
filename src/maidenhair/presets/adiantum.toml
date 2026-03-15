@@ -1,0 +1,25 @@
+[meta]
+name = "Adiantum capillus-veneris"
+description = "Southern maidenhair fern"
+reference = "Prusinkiewicz & Lindenmayer 1990, p.128"
+
+[grammar]
+axiom = "FFFFA"
+
+[grammar.rules]
+A = "F[+(48)&(12)B]/(137)F[-(48)&(12)B]/(137)FA"
+B = "f[+(38)~]f[-(38)~]fB"
+
+[params]
+step_length = 0.8
+radius_start = 0.04
+radius_ratio = 0.75
+angle_default = 25.0
+tropism_weight = 0.12
+iterations_default = 5
+iterations_max = 7
+
+[display]
+leaf_color = [100, 200, 60]
+branch_color = [140, 90, 44]
+background_color = [12, 22, 16]
