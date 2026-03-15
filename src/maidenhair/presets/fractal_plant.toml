@@ -19,6 +19,6 @@ iterations_default = 3
 iterations_max = 5
 
 [display]
-leaf_color = [90, 185, 55]
-branch_color = [145, 100, 48]
-background_color = [12, 22, 16]
+leaf_color = "spring-green"
+branch_color = "light-brown"
+background_color = "forest-night"

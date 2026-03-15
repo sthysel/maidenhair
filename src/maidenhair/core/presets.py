@@ -9,9 +9,10 @@ import importlib.resources
 import tomllib
 from pathlib import Path
 
-from pydantic import BaseModel
+from pydantic import BaseModel, field_validator
 
 from maidenhair.core.grammar import LSystem
+from maidenhair.core.palette import resolve_color
 
 
 class MetaConfig(BaseModel):
@@ -36,9 +37,16 @@ class ParamsConfig(BaseModel):
 
 
 class DisplayConfig(BaseModel):
+    """Display colours — accepts named colours ("light-green") or RGB lists ([75, 175, 55])."""
+
     leaf_color: list[int] = [88, 155, 48]
     branch_color: list[int] = [30, 10, 2]
     background_color: list[int] = [7, 18, 10]
+
+    @field_validator("leaf_color", "branch_color", "background_color", mode="before")
+    @classmethod
+    def _resolve_color(cls, v: str | list[int]) -> list[int]:
+        return resolve_color(v)
 
 
 class PresetConfig(BaseModel):
