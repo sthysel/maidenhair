@@ -230,7 +230,7 @@ class Viewport:
             return
 
         positions = np.empty((n, 3), dtype=np.float64)
-        for i, (pos, _normal) in enumerate(self.geometry.leaves):
+        for i, (pos, _heading, _left) in enumerate(self.geometry.leaves):
             positions[i] = pos
 
         screen, depth, mask = _project_points_batch(vp, positions, half_w, half_h)

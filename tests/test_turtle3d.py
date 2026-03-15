@@ -87,7 +87,7 @@ def test_leaf_emission():
     symbols = tokenise("F~")
     geo = interpret(symbols, step_length=1.0)
     assert len(geo.leaves) == 1
-    pos, normal = geo.leaves[0]
+    pos, heading, _left = geo.leaves[0]
     assert pos[1] > 0  # after moving up
 
 

@@ -89,25 +89,41 @@ void main() {
 }
 """
 
-# Billboard leaf shader: simple point-based with camera-facing quad
+# Oriented fan-shaped leaf shader — leaf is a wedge in 3D space,
+# wider along the left vector, shorter along the heading.
 _LEAF_VERTEX_SHADER = """
 #version 330
 
 uniform mat4 u_mvp;
-uniform vec3 u_cam_right;
-uniform vec3 u_cam_up;
 
-in vec3 in_position;
+in vec3 in_position;   // attachment point
+in vec3 in_heading;    // stem direction at this leaf
+in vec3 in_left;       // left vector of the turtle frame
 in vec3 in_color;
-in float in_side_x;  // -1 or +1
-in float in_side_y;  // -1 or +1
+in float in_corner;    // 0..4 corner index for fan triangle strip
 in float in_size;
 
 out vec3 v_color;
 out float v_depth;
 
 void main() {
-    vec3 pos = in_position + u_cam_right * in_side_x * in_size + u_cam_up * in_side_y * in_size;
+    // Fan shape: base at attachment, opens along left vector, extends along heading
+    // 5 corners: base, left-tip, center-tip, right-tip, base (fan of 3 triangles)
+    vec3 h = normalize(in_heading) * in_size * 0.7;
+    vec3 l = normalize(in_left) * in_size * 1.2;
+
+    vec3 pos;
+    int c = int(in_corner);
+    if (c == 0) {
+        pos = in_position;                    // base
+    } else if (c == 1) {
+        pos = in_position + h * 0.7 - l;     // left tip
+    } else if (c == 2) {
+        pos = in_position + h;                // center tip
+    } else {
+        pos = in_position + h * 0.7 + l;     // right tip
+    }
+
     gl_Position = u_mvp * vec4(pos, 1.0);
     v_color = in_color;
     v_depth = gl_Position.w;
@@ -318,42 +334,58 @@ class GLViewport:
             )
             self._n_seg_verts = n * 6
 
-        # Upload leaf data — 6 vertices per leaf billboard
-        # Layout: position(3f) color(3f) side_x(1f) side_y(1f) size(1f) = 9 floats
+        # Upload leaf data — fan-shaped oriented triangles
+        # 3 triangles per leaf (fan from base to 3 tips) = 9 vertices
+        # Layout: position(3f) heading(3f) left(3f) color(3f) corner(1f) size(1f) = 14 floats
         if self.geometry.leaves:
             lr = self.leaf_color[0] / 255.0
             lg = self.leaf_color[1] / 255.0
             lb = self.leaf_color[2] / 255.0
-            leaf_size = 0.08
+            leaf_size = 0.2
 
             n = len(self.geometry.leaves)
             leaf_pos = np.empty((n, 3), dtype=np.float32)
-            for i, (pos, _) in enumerate(self.geometry.leaves):
+            leaf_heading = np.empty((n, 3), dtype=np.float32)
+            leaf_left = np.empty((n, 3), dtype=np.float32)
+            for i, (pos, heading, left) in enumerate(self.geometry.leaves):
                 leaf_pos[i] = pos
+                leaf_heading[i] = heading
+                leaf_left[i] = left
 
-            data = np.empty((n * 6, 9), dtype=np.float32)
-            for vi, (sx, sy) in enumerate(
-                [
-                    (-1, -1),
-                    (1, -1),
-                    (1, 1),
-                    (-1, -1),
-                    (1, 1),
-                    (-1, 1),
-                ]
-            ):
-                data[vi::6, 0:3] = leaf_pos
-                data[vi::6, 3:6] = [lr, lg, lb]
-                data[vi::6, 6] = sx
-                data[vi::6, 7] = sy
-                data[vi::6, 8] = leaf_size
+            # 3 triangles per fan: (base,left_tip,center_tip), (base,center_tip,right_tip)
+            # corners: base=0, left_tip=1, center_tip=2, right_tip=3
+            verts_per_leaf = 9  # 3 triangles
+            data = np.empty((n * verts_per_leaf, 14), dtype=np.float32)
+
+            # Triangle 1: base(0), left_tip(1), center_tip(2)
+            # Triangle 2: base(0), center_tip(2), right_tip(3)
+            # Triangle 3: base(0), right_tip(3), left_tip(1) -- back face for visibility
+            corners = [0, 1, 2, 0, 2, 3, 0, 3, 1]
+            for vi, corner in enumerate(corners):
+                data[vi::verts_per_leaf, 0:3] = leaf_pos
+                data[vi::verts_per_leaf, 3:6] = leaf_heading
+                data[vi::verts_per_leaf, 6:9] = leaf_left
+                data[vi::verts_per_leaf, 9:12] = [lr, lg, lb]
+                data[vi::verts_per_leaf, 12] = corner
+                data[vi::verts_per_leaf, 13] = leaf_size
 
             vbo = self._ctx.buffer(data.tobytes())
             self._vao_leaves = self._ctx.vertex_array(
                 self._leaf_prog,
-                [(vbo, "3f 3f 1f 1f 1f", "in_position", "in_color", "in_side_x", "in_side_y", "in_size")],
+                [
+                    (
+                        vbo,
+                        "3f 3f 3f 3f 1f 1f",
+                        "in_position",
+                        "in_heading",
+                        "in_left",
+                        "in_color",
+                        "in_corner",
+                        "in_size",
+                    )
+                ],
             )
-            self._n_leaf_verts = n * 6
+            self._n_leaf_verts = n * verts_per_leaf
 
     def _build_mvp(self) -> np.ndarray:
         aspect = self.width / max(self.height, 1)
@@ -402,26 +434,10 @@ class GLViewport:
             self._seg_prog["u_bg_color"].value = bg[:3]
             self._vao_segments.render(moderngl.TRIANGLES, vertices=self._n_seg_verts)
 
-        # Draw leaves
+        # Draw leaves (oriented fan shapes — no billboard, proper 3D orientation)
         if self._vao_leaves is not None and self._n_leaf_verts > 0:
-            # Compute camera right/up for billboards
-            forward = self.camera.target - self.camera.position
-            fwd_len = np.linalg.norm(forward)
-            if fwd_len > 1e-10:
-                forward = forward / fwd_len
-            else:
-                forward = np.array([0, 0, -1], dtype=np.float64)
-            cam_right = np.cross(forward, [0, 1, 0])
-            cr_len = np.linalg.norm(cam_right)
-            if cr_len < 1e-10:
-                cam_right = np.array([1, 0, 0], dtype=np.float64)
-            else:
-                cam_right = cam_right / cr_len
-            cam_up = np.cross(cam_right, forward)
-
+            self._ctx.disable(moderngl.CULL_FACE)
             self._leaf_prog["u_mvp"].write(mvp.T.tobytes())
-            self._leaf_prog["u_cam_right"].value = tuple(cam_right.astype(np.float32).tolist())
-            self._leaf_prog["u_cam_up"].value = tuple(cam_up.astype(np.float32).tolist())
             self._leaf_prog["u_fog_near"].value = self.camera.distance * 0.3
             self._leaf_prog["u_fog_far"].value = self.camera.distance * 2.5
             self._leaf_prog["u_bg_color"].value = bg[:3]

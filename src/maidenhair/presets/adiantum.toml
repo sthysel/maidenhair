@@ -1,25 +1,29 @@
 [meta]
 name = "Adiantum capillus-veneris"
-description = "Southern maidenhair fern"
-reference = "Prusinkiewicz & Lindenmayer 1990, p.128"
+description = "Southern maidenhair fern — tripinnate with fan-shaped pinnae"
+reference = "Based on ABOP compound leaf model with Adiantum morphology"
 
 [grammar]
-axiom = "FFFFA"
+# A = main rachis apex: alternating primary pinnae with golden-angle roll
+# B = primary pinna apex: produces secondary sub-pinnae
+# C = secondary pinna apex: produces dense leaflets along its length
+axiom = "F(1)F(1)A"
 
 [grammar.rules]
-A = "F[+(48)&(12)B]/(137)F[-(48)&(12)B]/(137)FA"
-B = "f[+(38)~]f[-(38)~]fB"
+A = "F(0.5)!![+(48)&(10)B]/(137)F(0.5)[-(48)&(10)B]/(137)A"
+B = "F(0.25)![+(35)C]F(0.25)[-(35)C]!B"
+C = "f(0.08)[+(22)~][-(22)~]C"
 
 [params]
 step_length = 0.8
-radius_start = 0.04
-radius_ratio = 0.75
+radius_start = 0.035
+radius_ratio = 0.7
 angle_default = 25.0
-tropism_weight = 0.12
-iterations_default = 5
-iterations_max = 7
+tropism_weight = 0.18
+iterations_default = 7
+iterations_max = 9
 
 [display]
-leaf_color = [100, 200, 60]
-branch_color = [140, 90, 44]
+leaf_color = [75, 175, 55]
+branch_color = [30, 15, 8]
 background_color = [12, 22, 16]

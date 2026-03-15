@@ -37,7 +37,7 @@ def test_adiantum_preset():
     assert adiantum.meta.name == "Adiantum capillus-veneris"
     assert "A" in adiantum.grammar.rules
     assert "B" in adiantum.grammar.rules
-    assert adiantum.params.iterations_default == 5
+    assert adiantum.params.iterations_default == 7
 
 
 def test_preset_display_colors():

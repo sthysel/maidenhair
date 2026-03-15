@@ -13,7 +13,7 @@ from maidenhair.core.parametric import tokenise
 from maidenhair.core.presets import PresetConfig
 from maidenhair.core.turtle3d import Geometry, interpret
 
-_DRAG_THROTTLE = 0.03  # ~33 fps cap
+_DRAG_THROTTLE = 0.03
 
 
 def _create_viewport() -> tuple:  # type: ignore[type-arg]
@@ -60,10 +60,7 @@ class LSystemCanvas(ft.Container):
             content=ft.Stack(
                 controls=[
                     self._image,
-                    ft.Container(
-                        content=self._spinner,
-                        alignment=ft.Alignment(0, 0),
-                    ),
+                    ft.Container(content=self._spinner, alignment=ft.Alignment(0, 0)),
                     ft.Container(
                         content=self._status_label,
                         padding=ft.padding.only(left=8, bottom=4),
@@ -85,6 +82,10 @@ class LSystemCanvas(ft.Container):
             on_size_change=self._on_resize,
         )
 
+    @property
+    def _mime_type(self) -> str:
+        return "image/jpeg" if self.renderer_name == "OpenGL" else "image/bmp"
+
     def _update_fps(self) -> None:
         self._frame_count += 1
         now = time.monotonic()
@@ -96,11 +97,6 @@ class LSystemCanvas(ft.Container):
             self._status_label.value = f"{self.renderer_name}  {self._fps:.0f} fps"
             if self.page:
                 self._status_label.update()
-
-    # Determine image MIME type based on renderer
-    @property
-    def _mime_type(self) -> str:
-        return "image/jpeg" if self.renderer_name == "OpenGL" else "image/bmp"
 
     async def _on_resize(self, e: ft.LayoutSizeChangeEvent) -> None:
         w, h = int(e.width), int(e.height)
@@ -162,6 +158,7 @@ class LSystemCanvas(ft.Container):
             if self.page:
                 self._status_label.update()
             return
+
         b64 = base64.b64encode(img_bytes).decode("ascii")
         self._image.src = f"data:{self._mime_type};base64,{b64}"
         self._last_render_time = time.monotonic()
@@ -174,7 +171,7 @@ class LSystemCanvas(ft.Container):
         elapsed = now - self._last_render_time
         if elapsed < _DRAG_THROTTLE:
             if self._render_pending:
-                return  # already a pending render, skip this one
+                return
             self._render_pending = True
             await asyncio.sleep(_DRAG_THROTTLE - elapsed)
             self._render_pending = False

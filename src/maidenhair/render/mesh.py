@@ -67,7 +67,7 @@ def build_mesh(
 
     # Build leaf quads
     leaf_size = 0.15
-    for pos, normal in geometry.leaves:
+    for pos, normal, _left in geometry.leaves:
         normal_norm = normal / (np.linalg.norm(normal) + 1e-10)
 
         # Create a small quad perpendicular to the normal

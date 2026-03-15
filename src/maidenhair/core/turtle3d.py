@@ -20,8 +20,8 @@ class Geometry:
 
     # Each segment: (start_point, end_point, radius)
     segments: list[tuple[np.ndarray, np.ndarray, float]] = field(default_factory=list)
-    # Each leaf: (position, normal_vector)
-    leaves: list[tuple[np.ndarray, np.ndarray]] = field(default_factory=list)
+    # Each leaf: (position, heading, left_vector) for oriented fan shapes
+    leaves: list[tuple[np.ndarray, np.ndarray, np.ndarray]] = field(default_factory=list)
 
     def bounding_box(self) -> tuple[np.ndarray, np.ndarray]:
         """Return (min_corner, max_corner) of all segment endpoints."""
@@ -205,7 +205,13 @@ def interpret(
 
         elif name == "~":
             # Emit leaf
-            geometry.leaves.append((state.pos.copy(), state.frame[:, 0].copy()))
+            geometry.leaves.append(
+                (
+                    state.pos.copy(),
+                    state.frame[:, 0].copy(),  # heading
+                    state.frame[:, 1].copy(),  # left vector
+                )
+            )
 
         # else: unknown symbol, ignore (identity)
 
