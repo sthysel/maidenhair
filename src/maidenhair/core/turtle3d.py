@@ -202,6 +202,20 @@ def interpret(
             if stack:
                 state = stack.pop()
 
+        elif name == "$":
+            # Roll to vertical — rotate the turtle frame around H so that
+            # L lies in the horizontal plane (perpendicular to gravity).
+            # Standard ABOP symbol for aligning branches with the horizon.
+            heading = state.frame[:, 0]
+            world_up = np.array([0.0, 1.0, 0.0])
+            new_left = np.cross(world_up, heading)
+            left_len = np.linalg.norm(new_left)
+            if left_len > 1e-10:
+                new_left = new_left / left_len
+                new_up = np.cross(heading, new_left)
+                state.frame[:, 1] = new_left
+                state.frame[:, 2] = new_up
+
         elif name == "!":
             # Decrement radius
             state.radius *= radius_ratio

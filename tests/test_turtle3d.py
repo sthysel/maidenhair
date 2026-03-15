@@ -119,6 +119,31 @@ def test_tropism_bends_downward():
     assert end_bent[1] < end_straight[1]
 
 
+def test_dollar_roll_to_vertical():
+    """$ should align the left vector with the horizontal plane.
+
+    After &(45), heading is (0, 0.707, 0.707) — pitched toward +Z.
+    $ should roll the frame so the left vector has no Y component,
+    without changing the heading direction.
+    """
+    # Without $: pitch then branch — left vector has Y component from the pitch
+    syms_no_dollar = tokenise("&(45)[+F]")
+    geo1 = interpret(syms_no_dollar, step_length=1.0, angle_default=90.0)
+
+    # With $: pitch, roll to vertical, then branch — left vector is horizontal
+    syms_dollar = tokenise("&(45)$[+F]")
+    geo2 = interpret(syms_dollar, step_length=1.0, angle_default=90.0)
+
+    # Both should produce a segment, but in different directions
+    assert len(geo1.segments) == 1
+    assert len(geo2.segments) == 1
+
+    # The $ version's branch should go purely in X (horizontal left)
+    # because $ aligned the left vector with the horizontal plane
+    _, end2, _ = geo2.segments[0]
+    assert abs(end2[0]) > 0.5  # significant X component (horizontal)
+
+
 def test_centre():
     """centre() should return the midpoint of the bounding box."""
     symbols = tokenise("F[+(90)F][-(90)F]")

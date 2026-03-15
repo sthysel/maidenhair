@@ -24,7 +24,7 @@ class Symbol:
 
 
 # Single-character symbols recognised by the turtle interpreter
-TURTLE_SYMBOLS = set("Ff+-&^/\\[]!~")
+TURTLE_SYMBOLS = set("Ff+-&^/\\[]!~$")
 
 
 def tokenise(s: str) -> list[Symbol]:
