@@ -9,7 +9,7 @@ Built with Python 3.13, [flet](https://flet.dev) (Flutter-backed cross-platform
 UI), [moderngl](https://github.com/moderngl/moderngl) (GPU-accelerated
 rendering), and [numpy](https://numpy.org).
 
-![Adiantum raddianum](docs/adiantum.png)
+![Grammar editor](docs/grammar.png)
 
 ## Quick Start
 
@@ -68,59 +68,59 @@ reference manual.
 
 ### Ferns & compound leaves
 
-| Preset | Description | Source |
-|--------|-------------|--------|
-| `adiantum` | *Adiantum raddianum* — bushy clump of 7 arching tripinnate fronds | Custom |
-| `fern_abop_e` | Symmetric fern (node-rewriting) | ABOP 1.24e |
-| `fern_abop_f` | Asymmetric fern — most naturalistic 2D plant | ABOP 1.24f |
+| Preset        | Description                                                       | Source     |
+|---------------|-------------------------------------------------------------------|------------|
+| `adiantum`    | *Adiantum raddianum* — bushy clump of 7 arching tripinnate fronds | Custom     |
+| `fern_abop_e` | Symmetric fern (node-rewriting)                                   | ABOP 1.24e |
+| `fern_abop_f` | Asymmetric fern — most naturalistic 2D plant                      | ABOP 1.24f |
 
 ![Fern](docs/fern.png)
 
 ### Trees
 
-| Preset | Description | Source |
-|--------|-------------|--------|
-| `honda_tree_a` | Monopodial — r2=0.6, wide crown | ABOP 2.6a |
-| `honda_tree_b` | Monopodial — r2=0.9, dense | ABOP 2.6b |
-| `honda_tree_c` | Monopodial — r2=0.8, balanced | ABOP 2.6c |
-| `honda_tree_d` | Monopodial — a2=-30, drooping laterals | ABOP 2.6d |
-| `sympodial_tree_a` | Sympodial — a1=10 a2=60, narrow | ABOP 2.7a |
-| `sympodial_tree_b` | Sympodial — a1=5 a2=65, columnar | ABOP 2.7b |
-| `sympodial_tree_c` | Sympodial — a1=20 a2=50, spreading | ABOP 2.7c |
-| `sympodial_tree_d` | Sympodial — a1=35 a2=35, symmetric | ABOP 2.7d |
-| `ternary_tree_a` | Three-way branching, d1=94.7 | ABOP 2.8a |
-| `ternary_tree_b` | Three-way, golden angle spacing | ABOP 2.8b |
-| `ternary_tree_c` | Three-way, wide spread | ABOP 2.8c |
-| `weeping_tree` | Three-way with strong tropism | ABOP 2.8d |
+| Preset             | Description                            | Source    |
+|--------------------|----------------------------------------|-----------|
+| `honda_tree_a`     | Monopodial — r2=0.6, wide crown        | ABOP 2.6a |
+| `honda_tree_b`     | Monopodial — r2=0.9, dense             | ABOP 2.6b |
+| `honda_tree_c`     | Monopodial — r2=0.8, balanced          | ABOP 2.6c |
+| `honda_tree_d`     | Monopodial — a2=-30, drooping laterals | ABOP 2.6d |
+| `sympodial_tree_a` | Sympodial — a1=10 a2=60, narrow        | ABOP 2.7a |
+| `sympodial_tree_b` | Sympodial — a1=5 a2=65, columnar       | ABOP 2.7b |
+| `sympodial_tree_c` | Sympodial — a1=20 a2=50, spreading     | ABOP 2.7c |
+| `sympodial_tree_d` | Sympodial — a1=35 a2=35, symmetric     | ABOP 2.7d |
+| `ternary_tree_a`   | Three-way branching, d1=94.7           | ABOP 2.8a |
+| `ternary_tree_b`   | Three-way, golden angle spacing        | ABOP 2.8b |
+| `ternary_tree_c`   | Three-way, wide spread                 | ABOP 2.8c |
+| `weeping_tree`     | Three-way with strong tropism          | ABOP 2.8d |
 
 ![Honda tree](docs/honda_tree.png)
 
 ### Bushes & herbs
 
-| Preset | Description | Source |
-|--------|-------------|--------|
-| `abop_plant_a` | Edge-rewriting, 25.7° | ABOP 1.24a |
-| `abop_plant_b` | Edge-rewriting, 20° | ABOP 1.24b |
-| `abop_plant_c` | Edge-rewriting, 22.5° | ABOP 1.24c |
-| `bush_3d` | 3D bush with fan-shaped leaves | ABOP 1.25 |
-| `bush_a` | Opposing triple-F branches | Bourke |
-| `bush_c` | Dense five-branch bush | Bourke |
-| `bush_d_saupe` | Multi-variable complex bush | Bourke/Saupe |
-| `sticks` | Alternating branch sticks | ABOP 1.24d |
-| `weed` | Paired-branch weed | Bourke |
+| Preset         | Description                    | Source       |
+|----------------|--------------------------------|--------------|
+| `abop_plant_a` | Edge-rewriting, 25.7°          | ABOP 1.24a   |
+| `abop_plant_b` | Edge-rewriting, 20°            | ABOP 1.24b   |
+| `abop_plant_c` | Edge-rewriting, 22.5°          | ABOP 1.24c   |
+| `bush_3d`      | 3D bush with fan-shaped leaves | ABOP 1.25    |
+| `bush_a`       | Opposing triple-F branches     | Bourke       |
+| `bush_c`       | Dense five-branch bush         | Bourke       |
+| `bush_d_saupe` | Multi-variable complex bush    | Bourke/Saupe |
+| `sticks`       | Alternating branch sticks      | ABOP 1.24d   |
+| `weed`         | Paired-branch weed             | Bourke       |
 
 ### Inflorescences
 
-| Preset | Description | Source |
-|--------|-------------|--------|
-| `raceme` | Flower spike with golden-angle phyllotaxis | ABOP 3.3.1 |
-| `panicle` | Compound branching flower clusters | ABOP 3.3.1 |
-| `cyme` | Sympodial branching flower head | ABOP 3.3.2 |
+| Preset    | Description                                | Source     |
+|-----------|--------------------------------------------|------------|
+| `raceme`  | Flower spike with golden-angle phyllotaxis | ABOP 3.3.1 |
+| `panicle` | Compound branching flower clusters         | ABOP 3.3.1 |
+| `cyme`    | Sympodial branching flower head            | ABOP 3.3.2 |
 
 ### Algae
 
-| Preset | Description | Source |
-|--------|-------------|--------|
+| Preset    | Description                     | Source |
+|-----------|---------------------------------|--------|
 | `algae_a` | 18-rule complex branching algae | Bourke |
 
 ## Creating a Preset
