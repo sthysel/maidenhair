@@ -1,0 +1,23 @@
+[meta]
+name = "Sticks"
+description = "Alternating branching sticks — ABOP Figure 1.24(d)"
+reference = "Paul Bourke L-System page / ABOP Figure 1.24(d)"
+
+[grammar]
+axiom = "X"
+
+[grammar.rules]
+F = "FF"
+X = "F[+X]F[-X]+X"
+
+[params]
+step_length = 1.0
+angle_default = 20.0
+tropism_weight = 0.0
+iterations_default = 5
+iterations_max = 7
+
+[display]
+leaf_color = "fern-green"
+branch_color = "brown"
+background_color = "forest-night"

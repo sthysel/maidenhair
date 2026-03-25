@@ -1,0 +1,23 @@
+[meta]
+name = "Fern (ABOP 1.24e)"
+description = "Fern-like plant with symmetric branching — ABOP Figure 1.24(e)"
+reference = "ABOP Figure 1.24(e) / Paul Bourke Fractal Plant"
+
+[grammar]
+axiom = "X"
+
+[grammar.rules]
+F = "FF"
+X = "F[+X][-X]FX"
+
+[params]
+step_length = 1.0
+angle_default = 25.7
+tropism_weight = 0.0
+iterations_default = 6
+iterations_max = 8
+
+[display]
+leaf_color = "light-green"
+branch_color = "bark"
+background_color = "forest-night"

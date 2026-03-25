@@ -1,0 +1,25 @@
+[meta]
+name = "Panicle"
+description = "Compound monopodial inflorescence — branching flower clusters"
+reference = "ABOP p.73, Section 3.3.1"
+
+[grammar]
+axiom = "A"
+
+[grammar.rules]
+A = "F[+B]/(137)A"
+B = "F[-~]B"
+
+[params]
+step_length = 0.5
+angle_default = 25.0
+radius_start = 0.04
+radius_ratio = 0.85
+tropism_weight = 0.05
+iterations_default = 8
+iterations_max = 12
+
+[display]
+leaf_color = "lavender"
+branch_color = "green"
+background_color = "forest-night"

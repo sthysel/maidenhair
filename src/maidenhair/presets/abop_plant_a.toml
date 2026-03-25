@@ -1,0 +1,21 @@
+[meta]
+name = "ABOP Plant a"
+description = "2D branching, edge-rewriting — Figure 1.24a"
+reference = "ABOP p.25, Figure 1.24a"
+
+[grammar]
+axiom = "F"
+
+[grammar.rules]
+F = "F[+F]F[-F]F"
+
+[params]
+step_length = 1.0
+angle_default = 25.7
+iterations_default = 5
+iterations_max = 6
+
+[display]
+leaf_color = "fern-green"
+branch_color = "bark"
+background_color = "forest-night"

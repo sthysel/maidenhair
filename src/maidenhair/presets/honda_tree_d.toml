@@ -1,0 +1,26 @@
+[meta]
+name = "Honda Tree d"
+description = "Monopodial tree — r1=0.9 r2=0.7 a0=30 a2=-30 (requires parametric engine for full fidelity)"
+reference = "ABOP p.56, Figure 2.6d, Table 2.1"
+
+[grammar]
+axiom = "A"
+
+[grammar.rules]
+A = "F(1)!![&(30)B]/(137)A"
+B = "F(0.7)![+(30)$C]B"
+C = "F(0.7)![-(30)$B]B"
+
+[params]
+step_length = 1.0
+radius_start = 0.1
+radius_ratio = 0.707
+angle_default = 30.0
+tropism_weight = 0.12
+iterations_default = 8
+iterations_max = 12
+
+[display]
+leaf_color = "dark-green"
+branch_color = "walnut"
+background_color = "forest-night"

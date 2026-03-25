@@ -1,0 +1,23 @@
+[meta]
+name = "Fern (ABOP 1.24f)"
+description = "Complex asymmetric fern — ABOP Figure 1.24(f)"
+reference = "ABOP Figure 1.24(f) / Paul Bourke Fractal Plant"
+
+[grammar]
+axiom = "X"
+
+[grammar.rules]
+F = "FF"
+X = "F-[[X]+X]+F[+FX]-X"
+
+[params]
+step_length = 1.0
+angle_default = 22.5
+tropism_weight = 0.0
+iterations_default = 5
+iterations_max = 7
+
+[display]
+leaf_color = "spring-green"
+branch_color = "walnut"
+background_color = "forest-night"

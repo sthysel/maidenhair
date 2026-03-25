@@ -1,0 +1,24 @@
+[meta]
+name = "Ternary Tree b"
+description = "Three-way branching with golden angle — d1=137.5 d2=137.5 a=18.95"
+reference = "ABOP p.60, Figure 2.8b, Table 2.3"
+
+[grammar]
+axiom = "!F(4)/(45)A"
+
+[grammar.rules]
+A = "!F(1)[&(18)F(1)A]/(137)[&(18)F(1)A]/(137)[&(18)F(1)A]"
+
+[params]
+step_length = 1.0
+radius_start = 0.12
+radius_ratio = 0.65
+angle_default = 18.95
+tropism_weight = 0.05
+iterations_default = 6
+iterations_max = 8
+
+[display]
+leaf_color = "fern-green"
+branch_color = "walnut"
+background_color = "forest-night"

@@ -1,0 +1,24 @@
+[meta]
+name = "Ternary Tree c"
+description = "Three-way branching — d1=112.5 d2=157.5 a=22.5"
+reference = "ABOP p.60, Figure 2.8c, Table 2.3"
+
+[grammar]
+axiom = "!F(4)/(45)A"
+
+[grammar.rules]
+A = "!F(1)[&(22)F(1)A]/(112)[&(22)F(1)A]/(157)[&(22)F(1)A]"
+
+[params]
+step_length = 1.0
+radius_start = 0.12
+radius_ratio = 0.65
+angle_default = 22.5
+tropism_weight = 0.05
+iterations_default = 6
+iterations_max = 8
+
+[display]
+leaf_color = "light-green"
+branch_color = "dark-brown"
+background_color = "forest-night"

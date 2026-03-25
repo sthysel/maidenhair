@@ -1,0 +1,25 @@
+[meta]
+name = "Sympodial Tree b (Aono & Kunii)"
+description = "Sympodial — r1=0.9 r2=0.7 a1=5 a2=65 (requires parametric engine for full fidelity)"
+reference = "ABOP p.59, Figure 2.7b, Table 2.2"
+
+[grammar]
+axiom = "A"
+
+[grammar.rules]
+A = "F(1)![&(5)B]/(180)[&(65)B]"
+B = "F(0.9)![+(5)$B][-(65)$B]"
+
+[params]
+step_length = 1.0
+radius_start = 0.1
+radius_ratio = 0.707
+angle_default = 5.0
+tropism_weight = 0.08
+iterations_default = 8
+iterations_max = 12
+
+[display]
+leaf_color = "olive"
+branch_color = "brown"
+background_color = "forest-night"

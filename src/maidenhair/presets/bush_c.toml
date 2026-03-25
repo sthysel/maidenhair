@@ -1,0 +1,22 @@
+[meta]
+name = "Bush C"
+description = "Dense bush with five branching sub-rules per segment"
+reference = "Paul Bourke L-System page"
+
+[grammar]
+axiom = "F"
+
+[grammar.rules]
+F = "F[+FF][-FF]F[-F][+F]F"
+
+[params]
+step_length = 1.0
+angle_default = 35.0
+tropism_weight = 0.0
+iterations_default = 3
+iterations_max = 5
+
+[display]
+leaf_color = "green"
+branch_color = "walnut"
+background_color = "forest-night"

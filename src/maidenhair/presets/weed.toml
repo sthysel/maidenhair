@@ -1,0 +1,24 @@
+[meta]
+name = "Weed"
+description = "Simple weed-like plant with paired branching"
+reference = "Paul Bourke L-System page"
+
+[grammar]
+axiom = "F"
+
+[grammar.rules]
+F = "FF-[XY]+[XY]"
+X = "+FY"
+Y = "-FX"
+
+[params]
+step_length = 1.0
+angle_default = 22.5
+tropism_weight = 0.0
+iterations_default = 5
+iterations_max = 7
+
+[display]
+leaf_color = "olive"
+branch_color = "dark-brown"
+background_color = "forest-night"

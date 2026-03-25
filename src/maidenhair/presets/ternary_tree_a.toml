@@ -1,0 +1,24 @@
+[meta]
+name = "Ternary Tree a"
+description = "Three-way branching — d1=94.74 d2=132.63 a=18.95 (requires parametric engine for full fidelity)"
+reference = "ABOP p.60, Figure 2.8a, Table 2.3"
+
+[grammar]
+axiom = "!F(4)/(45)A"
+
+[grammar.rules]
+A = "!F(1)[&(18)F(1)A]/(94)[&(18)F(1)A]/(132)[&(18)F(1)A]"
+
+[params]
+step_length = 1.0
+radius_start = 0.12
+radius_ratio = 0.65
+angle_default = 18.95
+tropism_weight = 0.05
+iterations_default = 6
+iterations_max = 8
+
+[display]
+leaf_color = "dark-green"
+branch_color = "bark"
+background_color = "forest-night"

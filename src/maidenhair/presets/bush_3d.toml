@@ -1,0 +1,24 @@
+[meta]
+name = "3D Bush"
+description = "Three-dimensional bush with leaves — Figure 1.25"
+reference = "ABOP p.26, Figure 1.25"
+
+[grammar]
+axiom = "A"
+
+[grammar.rules]
+A = "[&F~!A]/////[&F~!A]///////[&F~!A]"
+F = "S/////F"
+S = "F~"
+
+[params]
+step_length = 1.0
+angle_default = 22.5
+tropism_weight = 0.0
+iterations_default = 7
+iterations_max = 9
+
+[display]
+leaf_color = "bright-green"
+branch_color = "dark-bark"
+background_color = "forest-night"

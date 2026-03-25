@@ -1,0 +1,23 @@
+[meta]
+name = "Bush A"
+description = "Bushy plant with opposing triple-F branches"
+reference = "Paul Bourke L-System page"
+
+[grammar]
+axiom = "Y"
+
+[grammar.rules]
+X = "X[-FFF][+FFF]FX"
+Y = "YFX[+Y][-Y]"
+
+[params]
+step_length = 1.0
+angle_default = 25.7
+tropism_weight = 0.0
+iterations_default = 5
+iterations_max = 7
+
+[display]
+leaf_color = "fern-green"
+branch_color = "oak"
+background_color = "forest-night"

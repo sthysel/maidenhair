@@ -1,0 +1,24 @@
+[meta]
+name = "Cyme"
+description = "Sympodial inflorescence — branching flower head"
+reference = "ABOP p.82, Section 3.3.2"
+
+[grammar]
+axiom = "A"
+
+[grammar.rules]
+A = "F[+A][-A]"
+
+[params]
+step_length = 1.0
+angle_default = 30.0
+radius_start = 0.05
+radius_ratio = 0.75
+tropism_weight = 0.0
+iterations_default = 8
+iterations_max = 12
+
+[display]
+leaf_color = "yellow"
+branch_color = "green"
+background_color = "forest-night"

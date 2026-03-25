@@ -1,0 +1,42 @@
+[meta]
+name = "Algae A"
+description = "Complex algae with 18-symbol productions forming branching fronds"
+reference = "Paul Bourke L-System page"
+
+[grammar]
+axiom = "aF"
+
+[grammar.rules]
+a = "FFFFFv[+++h][---q]fb"
+b = "FFFFFv[+++h][---q]fc"
+c = "FFFFFv[+++fa]fd"
+d = "FFFFFv[+++h][---q]fe"
+e = "FFFFFv[+++h][---q]fg"
+g = "FFFFFv[---fa]fa"
+h = "ifFF"
+i = "fFFF[--m]j"
+j = "fFFF[--n]k"
+k = "fFFF[--o]l"
+l = "fFFF[--p]"
+m = "fFn"
+n = "fFo"
+o = "fFp"
+p = "fF"
+q = "rfF"
+r = "fFFF[++m]s"
+s = "fFFF[++n]t"
+t = "fFFF[++o]u"
+u = "fFFF[++p]"
+v = "Fv"
+
+[params]
+step_length = 0.3
+angle_default = 12.0
+tropism_weight = 0.0
+iterations_default = 10
+iterations_max = 14
+
+[display]
+leaf_color = "dark-green"
+branch_color = "moss"
+background_color = "midnight"
