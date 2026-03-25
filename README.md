@@ -62,6 +62,8 @@ result rendered live. A derivation preview shows the first 500 characters
 of the expanded string. The **?** button opens the built-in L-systems
 reference manual.
 
+![Grammar editor](docs/grammar.png)
+
 ## Bundled Presets
 
 ### Ferns & compound leaves
@@ -71,6 +73,8 @@ reference manual.
 | `adiantum` | *Adiantum raddianum* — bushy clump of 7 arching tripinnate fronds | Custom |
 | `fern_abop_e` | Symmetric fern (node-rewriting) | ABOP 1.24e |
 | `fern_abop_f` | Asymmetric fern — most naturalistic 2D plant | ABOP 1.24f |
+
+![Fern](docs/fern.png)
 
 ### Trees
 
@@ -88,6 +92,8 @@ reference manual.
 | `ternary_tree_b` | Three-way, golden angle spacing | ABOP 2.8b |
 | `ternary_tree_c` | Three-way, wide spread | ABOP 2.8c |
 | `weeping_tree` | Three-way with strong tropism | ABOP 2.8d |
+
+![Honda tree](docs/honda_tree.png)
 
 ### Bushes & herbs
 
