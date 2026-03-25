@@ -1,7 +1,5 @@
 """Flet canvas wrapping the GL or software rasteriser viewport."""
 
-from __future__ import annotations
-
 import asyncio
 import time
 

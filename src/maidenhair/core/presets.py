@@ -3,8 +3,6 @@
 Presets are loaded via importlib.resources from the maidenhair.presets package.
 """
 
-from __future__ import annotations
-
 import importlib.resources
 import tomllib
 from pathlib import Path

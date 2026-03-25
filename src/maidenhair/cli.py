@@ -1,7 +1,5 @@
 """CLI for maidenhair — headless render and batch export."""
 
-from __future__ import annotations
-
 from enum import StrEnum
 from pathlib import Path
 from typing import Annotated

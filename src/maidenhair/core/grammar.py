@@ -4,8 +4,6 @@ Supports deterministic and stochastic production rules.
 Pure logic — no side effects, no global state.
 """
 
-from __future__ import annotations
-
 import random
 from collections.abc import Iterator
 from dataclasses import dataclass, field

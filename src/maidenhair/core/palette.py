@@ -4,8 +4,6 @@ Human-readable colour names that can be used in preset TOML files
 instead of raw RGB triples.
 """
 
-from __future__ import annotations
-
 # Greens
 PALETTE: dict[str, tuple[int, int, int]] = {
     "green": (55, 140, 45),

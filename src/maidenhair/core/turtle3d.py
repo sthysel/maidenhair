@@ -5,8 +5,6 @@ Coordinate system: Y-up, right-handed. Turtle starts facing +Y.
 Gravity (tropism) bends toward -Y.
 """
 
-from __future__ import annotations
-
 from dataclasses import dataclass, field
 
 import numpy as np

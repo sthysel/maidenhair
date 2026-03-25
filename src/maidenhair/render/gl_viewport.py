@@ -7,8 +7,6 @@ Renders L-system geometry with:
 - Depth-based fog shading
 """
 
-from __future__ import annotations
-
 import io
 from dataclasses import dataclass, field
 

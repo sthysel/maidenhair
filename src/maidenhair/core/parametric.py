@@ -4,8 +4,6 @@ Parses strings like "F(2.5)+(-30)[!~]" into a list of Symbol objects.
 Supports multi-character symbol names only for known turtle commands.
 """
 
-from __future__ import annotations
-
 from dataclasses import dataclass, field
 
 

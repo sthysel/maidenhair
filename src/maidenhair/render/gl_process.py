@@ -4,8 +4,6 @@ Runs the moderngl context in a dedicated child process to avoid
 OpenGL context conflicts with flet's Flutter engine.
 """
 
-from __future__ import annotations
-
 import io
 import logging
 import multiprocessing as mp

@@ -1,7 +1,5 @@
 """Flet application entry point for Maidenhair."""
 
-from __future__ import annotations
-
 import flet as ft
 
 from maidenhair.ui.canvas import LSystemCanvas

@@ -3,8 +3,6 @@
 Converts segments into trimesh cylinder meshes and leaves into quad meshes.
 """
 
-from __future__ import annotations
-
 import numpy as np
 import trimesh
 

@@ -1,7 +1,5 @@
 """Grammar editor page — full L-system editor with live preview."""
 
-from __future__ import annotations
-
 import asyncio
 import importlib.resources
 from typing import TYPE_CHECKING

@@ -4,8 +4,6 @@ numpy -> PIL -> image bytes pipeline. No flet imports.
 Wireframe-style with depth shading and perspective-correct widths.
 """
 
-from __future__ import annotations
-
 import io
 from dataclasses import dataclass, field
 

@@ -1,7 +1,5 @@
 """Export L-system geometry to standard 3D file formats."""
 
-from __future__ import annotations
-
 from pathlib import Path
 
 from maidenhair.core.turtle3d import Geometry
